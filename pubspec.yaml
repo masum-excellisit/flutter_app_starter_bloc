@@ -1,0 +1,59 @@
+name: flutter_app_starter_bloc
+description: "A Flutter app starter with clean architecture, BLoC pattern, and essential features."
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  
+  # Routing
+  go_router: ^14.2.7
+  
+  # HTTP Client
+  dio: ^5.7.0
+  
+  # Local Storage
+  shared_preferences: ^2.3.2
+  
+  # Dependency Injection
+  get_it: ^8.0.0
+  
+  # JSON Serialization
+  json_annotation: ^4.9.0
+  
+  # UI Components
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.10+1
+  
+  # Utils
+  equatable: ^2.0.5
+  intl: ^0.19.0
+  dartz: ^0.10.1
+  
+  # Security
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.12
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
