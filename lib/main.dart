@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/storage_service.dart';
 import 'app_router.dart';
-import 'injection_container.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize dependencies
-  await di.init();
 
   // Initialize storage
   await StorageService.init();
