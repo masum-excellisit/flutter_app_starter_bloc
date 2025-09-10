@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/register_screen.dart';
+import 'features/login/login_module.dart';
 import 'features/splash/screens/splash_screen.dart';
 
 
@@ -18,13 +17,9 @@ class AppRouter {
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => LoginModule.route(),
       ),
-      GoRoute(
-        path: '/register',
-        name: 'register',
-        builder: (context, state) => const RegisterScreen(),
-      ),
+     
       GoRoute(
         path: '/home',
         name: 'home',

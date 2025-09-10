@@ -69,10 +69,10 @@ class ApiClient {
   Future<ApiResponse<T>> postRequest<T>(
       {required String endPoint,
       Map<String, dynamic>? reqModel,
-      required T Function(Map<String, dynamic>) fromJosn}) async {
+      required T Function(Map<String, dynamic>) fromJson}) async {
     try {
       final response = await _dio.post(endPoint, data: reqModel);
-      final data = fromJosn(response.data);
+      final data = fromJson(response.data);
       return ApiResponse<T>(data: data, statusCode: response.statusCode ?? 0);
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
@@ -85,10 +85,10 @@ class ApiClient {
   Future<ApiResponse<List<T>>> postRequestList<T>(
       {required String endPoint,
       Map<String, dynamic>? reqModel,
-      required List<T> Function(List<dynamic>) fromJosnList}) async {
+      required List<T> Function(List<dynamic>) fromJsonList}) async {
     try {
       final response = await _dio.post(endPoint, data: reqModel);
-      final data = fromJosnList(response.data);
+      final data = fromJsonList(response.data);
       return ApiResponse<List<T>>(
           data: data, statusCode: response.statusCode ?? 0);
     } on DioException catch (e) {

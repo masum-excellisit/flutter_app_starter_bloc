@@ -14,6 +14,6 @@ class MainUrl {
 
 class EndPoints {
   static var baseUrl = MainUrl().getUrl();
-  static const userLogin = '/users/sign-in';
+  static const userLogin = '/auth/login';
   
 }
