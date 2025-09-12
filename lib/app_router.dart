@@ -3,12 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import 'features/home/screens/home_screen.dart';
 import 'features/login/login_module.dart';
+import 'features/register/register_module.dart';
 import 'features/splash/screens/splash_screen.dart';
-
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/register',
     routes: [
       GoRoute(
         path: '/splash',
@@ -20,7 +20,12 @@ class AppRouter {
         name: 'login',
         builder: (context, state) => LoginModule.route(),
       ),
-     
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => RegisterModule.route(),
+      ),
+
       GoRoute(
         path: '/home',
         name: 'home',
