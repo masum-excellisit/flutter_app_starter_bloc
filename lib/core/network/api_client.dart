@@ -1,6 +1,5 @@
 import 'dart:io';
 
-
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
@@ -16,12 +15,13 @@ class ApiClient {
     _dio.options.baseUrl = EndPoints.baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 60);
     _dio.options.receiveTimeout = const Duration(seconds: 60);
-    _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
-       final token = await _storage.read(key: AppConstants.accessTokenKey);
-     
+    _dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      final token = await _storage.read(key: AppConstants.accessTokenKey);
+
       if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
+        options.headers['Authorization'] = 'Bearer $token';
+      }
       return handler.next(options);
     }, onError: (DioException e, handler) {
       if (e.response?.statusCode == 401) {}
@@ -195,7 +195,7 @@ class ApiClient {
   String _handleStatusCode(int statusCode) {
     switch (statusCode) {
       case 400:
-        return "Bad Request";
+        return "Bad Request 22";
       case 401:
         return "Unauthorized";
       case 403:

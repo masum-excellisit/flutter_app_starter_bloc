@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
+import '../bloc/login_state.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -16,21 +17,42 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(controller: _userCtrl, decoration: const InputDecoration(labelText: 'Username')),
-        TextField(controller: _passCtrl, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            context.read<LoginBloc>().add(LoginSubmitted(
-              _userCtrl.text.trim(),
-              _passCtrl.text.trim(),
-            ));
-          },
-          child: const Text('Login'),
-        ),
-      ],
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        final isLoading = state is LoginLoading;
+
+        return Column(
+          children: [
+            TextField(
+              controller: _userCtrl,
+              decoration: const InputDecoration(labelText: 'Username'),
+            ),
+            TextField(
+              controller: _passCtrl,
+              decoration: const InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      context.read<LoginBloc>().add(LoginSubmitted(
+                            _userCtrl.text.trim(),
+                            _passCtrl.text.trim(),
+                          ));
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Login'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

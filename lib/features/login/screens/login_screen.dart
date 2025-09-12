@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_state.dart';
 import '../widgets/login_form.dart';
@@ -13,24 +14,20 @@ class LoginScreen extends StatelessWidget {
       appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: BlocConsumer<LoginBloc, LoginState>(
+        child: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
             if (state is LoginSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Welcome ${state.user.username}")),
               );
+              context.goNamed('home');
             } else if (state is LoginFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
               );
             }
           },
-          builder: (context, state) {
-            if (state is LoginLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return const LoginForm();
-          },
+          child: const LoginForm(),
         ),
       ),
     );

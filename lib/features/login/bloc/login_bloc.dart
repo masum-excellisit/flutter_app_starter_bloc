@@ -10,6 +10,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmitted>((event, emit) async {
       emit(LoginLoading());
       final res = await repo.login(event.username, event.password);
+      if (res.statusCode == 400) {
+        emit(LoginFailure("Invalid credentials"));
+        return;
+      }
       if (res.data != null) {
         emit(LoginSuccess(res.data!));
       } else {
