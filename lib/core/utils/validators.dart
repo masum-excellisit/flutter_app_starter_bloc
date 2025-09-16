@@ -12,13 +12,13 @@ class Validators {
     return null;
   }
 
-  static String? password(String? value) {
+  static String? password(String? value, int? minLength) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
 
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long';
+    if (value.length < (minLength ?? 6)) {
+      return 'Password must be at least ${minLength ?? 6} characters long';
     }
 
     return null;
