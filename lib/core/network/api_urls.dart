@@ -14,5 +14,5 @@ class EndPoints {
   static var baseUrl = MainUrl().getUrl();
   static const userLogin = '/auth/login';
   static const register = "/users/add";
-  static const profile = "/users/profile";
+  static const profile = "/user/me";
 }

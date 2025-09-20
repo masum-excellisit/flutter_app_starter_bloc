@@ -14,11 +14,12 @@ class ProfileView extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 40,
-            backgroundImage: NetworkImage(profile.avatar),
+            backgroundImage: NetworkImage(profile.image ?? ''),
           ),
           const SizedBox(height: 16),
-          Text(profile.name, style: const TextStyle(fontSize: 20)),
-          Text(profile.email, style: const TextStyle(color: Colors.grey)),
+          Text('${profile.firstName} ${profile.lastName}',
+              style: const TextStyle(fontSize: 20)),
+          Text(profile.email ?? '', style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );

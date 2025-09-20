@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
+import '../utils/storage_service.dart';
 import 'api_response.dart';
 import 'api_urls.dart';
 
 class ApiClient {
   final Dio _dio = Dio();
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // Constructor to initialize Dio with base URL and interceptors
   ApiClient() {
@@ -17,7 +17,8 @@ class ApiClient {
     _dio.options.receiveTimeout = const Duration(seconds: 60);
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      final token = await _storage.read(key: AppConstants.accessTokenKey);
+      final token = await StorageService.getAccessToken();
+      print("Access Token from Storage: $token");
 
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';

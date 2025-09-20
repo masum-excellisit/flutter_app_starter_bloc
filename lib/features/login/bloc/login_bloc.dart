@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_helpers.dart';
+import '../../../core/utils/storage_service.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 import '../data/login_repository.dart';
@@ -16,6 +18,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       }
       if (res.data != null) {
         emit(LoginSuccess(res.data!));
+        print("Access Token: ${res.data!.accessToken}");
+        print("Refresh Token: ${res.data!.refreshToken}");
+        StorageService.saveTokens(
+            res.data!.accessToken, res.data!.refreshToken);
       } else {
         emit(LoginFailure(res.errorMessage ?? "Something went wrong"));
       }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_helpers.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
 import '../bloc/login_state.dart';
@@ -37,6 +38,7 @@ class _LoginFormState extends State<LoginForm> {
               onPressed: isLoading
                   ? null
                   : () {
+                      AppHelpers.hideKeyboard(context);
                       context.read<LoginBloc>().add(LoginSubmitted(
                             _userCtrl.text.trim(),
                             _passCtrl.text.trim(),

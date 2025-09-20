@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/profile_bloc.dart';
@@ -5,8 +7,23 @@ import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
 import '../widgets/profile_view.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // Fetch profile data when the screen is initialized with post frame callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileBloc>().add(FetchProfile());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () {
                 context.read<ProfileBloc>().add(FetchProfile());
               },
-              child: const Text("Load Profile"),
+              child: const Text("Retry"),
             ),
           );
         },

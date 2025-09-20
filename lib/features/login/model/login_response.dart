@@ -1,23 +1,3 @@
-// class LoginResponse {
-//   final String token;
-//   final int id;
-//   final String username;
-
-//   LoginResponse({
-//     required this.token,
-//     required this.id,
-//     required this.username,
-//   });
-
-//   factory LoginResponse.fromJson(Map<String, dynamic> json) {
-//     return LoginResponse(
-//       token: json['token'] ?? '',
-//       id: json['id'] ?? 0,
-//       username: json['username'] ?? '',
-//     );
-//   }
-// }
-
 class LoginResponse {
   int? id;
   String? username;
@@ -26,8 +6,8 @@ class LoginResponse {
   String? lastName;
   String? gender;
   String? image;
-  String? accessToken;
-  String? refreshToken;
+  String accessToken;
+  String refreshToken;
 
   LoginResponse(
       {this.id,
@@ -37,10 +17,12 @@ class LoginResponse {
       this.lastName,
       this.gender,
       this.image,
-      this.accessToken,
-      this.refreshToken});
+      required this.accessToken,
+      required this.refreshToken});
 
-  LoginResponse.fromJson(Map<String, dynamic> json) {
+  LoginResponse.fromJson(Map<String, dynamic> json)
+      : accessToken = json['accessToken'] ?? '',
+        refreshToken = json['refreshToken'] ?? '' {
     id = json['id'];
     username = json['username'];
     email = json['email'];
@@ -48,7 +30,5 @@ class LoginResponse {
     lastName = json['lastName'];
     gender = json['gender'];
     image = json['image'];
-    accessToken = json['accessToken'];
-    refreshToken = json['refreshToken'];
   }
 }
