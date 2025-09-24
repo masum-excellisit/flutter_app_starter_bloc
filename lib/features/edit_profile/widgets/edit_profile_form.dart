@@ -34,6 +34,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
           TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: "First Name")),
+          const SizedBox(height: 20),
           TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: "Email")),
@@ -41,7 +42,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
           ElevatedButton(
             onPressed: () {
               final request = EditProfileRequest(
-                name: nameController.text,
+                firstName: nameController.text,
                 email: emailController.text,
               );
               context.read<EditProfileBloc>().add(UpdateProfileEvent(request));

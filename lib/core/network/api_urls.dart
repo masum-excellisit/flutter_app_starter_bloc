@@ -15,6 +15,5 @@ class EndPoints {
   static const userLogin = '/auth/login';
   static const register = "/users/add";
   static const profile = "/user/me";
-  static const updateProfile = "/user/update";
-  static const getProfile = "/user/me";
+  static const updateProfile = "/users";
 }

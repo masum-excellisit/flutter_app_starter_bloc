@@ -22,6 +22,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       emit(EditProfileLoading());
       final response = await repository.updateProfile(event.request,
           imageFile: event.imageFile);
+      print("Response: ${response.toString()}");
       if (response.data != null) {
         emit(EditProfileLoaded(response.data!));
       } else {

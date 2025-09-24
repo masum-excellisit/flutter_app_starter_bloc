@@ -4,6 +4,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
 import '../../../core/network/api_urls.dart';
 
+import '../../../core/utils/storage_service.dart';
 import '../model/edit_profile_request.dart';
 import '../model/edit_profile_response.dart';
 
@@ -13,15 +14,16 @@ class EditProfileApi {
 
   Future<ApiResponse<EditProfileResponse>> fetchProfile() {
     return _client.getRequest<EditProfileResponse>(
-      endPoint: EndPoints.getProfile,
+      endPoint: EndPoints.profile,
       fromJson: (json) => EditProfileResponse.fromJson(json),
     );
   }
 
   Future<ApiResponse<EditProfileResponse>> updateProfile(
-      EditProfileRequest request) {
-    return _client.postRequest<EditProfileResponse>(
-      endPoint: EndPoints.updateProfile,
+      EditProfileRequest request) async {
+    final userId = await StorageService.getUserData('id');
+    return _client.putRequest<EditProfileResponse>(
+      endPoint: '${EndPoints.updateProfile}/$userId',
       reqModel: request.toJson(),
       fromJson: (json) => EditProfileResponse.fromJson(json),
     );

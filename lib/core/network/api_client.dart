@@ -28,6 +28,18 @@ class ApiClient {
       if (e.response?.statusCode == 401) {}
       return handler.next(e);
     }));
+    // print request and response
+    _dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      requestHeader: false,
+      responseHeader: false,
+      error: true,
+      request: true,
+      logPrint: (obj) {
+        print(obj);
+      },
+    ));
   }
 
   // API request method GET
@@ -97,6 +109,22 @@ class ApiClient {
       final errorMessage = _handleDioError(e, statusCode);
       return ApiResponse<List<T>>(
           statusCode: statusCode, errorMessage: errorMessage);
+    }
+  }
+
+  // API request method PUT
+  Future<ApiResponse<T>> putRequest<T>(
+      {required String endPoint,
+      Map<String, dynamic>? reqModel,
+      required T Function(Map<String, dynamic>) fromJson}) async {
+    try {
+      final response = await _dio.put(endPoint, data: reqModel);
+      final data = fromJson(response.data);
+      return ApiResponse<T>(data: data, statusCode: response.statusCode ?? 0);
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode ?? 0;
+      final errorMessage = _handleDioError(e, statusCode);
+      return ApiResponse<T>(statusCode: statusCode, errorMessage: errorMessage);
     }
   }
 
