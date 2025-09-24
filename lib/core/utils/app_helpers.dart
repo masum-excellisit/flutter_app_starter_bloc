@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -200,5 +201,48 @@ class AppHelpers {
         ],
       ),
     );
+  }
+
+  // get value from JSON string by key
+  static String? getStringFromMap(String? data, String key) {
+    if (data == null) return null;
+    try {
+      final Map<String, dynamic> map = jsonDecode(data);
+      return map[key]?.toString();
+    } catch (e) {
+      print('Error decoding JSON: $e');
+      return null;
+    }
+  }
+
+  // convert Map to JSON string
+  static String mapToJson(Map<String, dynamic> map) {
+    return jsonEncode(map);
+  }
+
+  // convert JSON string back to Map
+  static Map<String, dynamic>? jsonToMap(String? data) {
+    if (data == null) return null;
+    try {
+      return jsonDecode(data);
+    } catch (e) {
+      print('Error decoding JSON: $e');
+      return null;
+    }
+  }
+
+  // logout helper
+  static Future<void> logout(
+      BuildContext context, VoidCallback onLoggedOut) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Logout',
+      content: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+      cancelText: 'Cancel',
+    );
+    if (confirmed == true) {
+      onLoggedOut();
+    }
   }
 }

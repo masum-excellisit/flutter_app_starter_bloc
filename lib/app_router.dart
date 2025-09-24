@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'features/edit_profile/edit_profile_module.dart';
 import 'features/login/login_module.dart';
 import 'features/profile/profile_module.dart';
 import 'features/register/register_module.dart';
@@ -8,7 +9,7 @@ import 'features/splash/screens/splash_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/profile',
     routes: [
       GoRoute(
         path: '/splash',
@@ -29,6 +30,11 @@ class AppRouter {
         path: '/profile',
         name: 'profile',
         builder: (context, state) => ProfileModule.route(),
+      ),
+      GoRoute(
+        path: '/edit_profile',
+        name: 'edit_profile',
+        builder: (context, state) => EditProfileModule.route(),
       ),
 
       // GoRoute(

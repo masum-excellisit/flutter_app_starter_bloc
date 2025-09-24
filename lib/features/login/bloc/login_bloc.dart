@@ -20,8 +20,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(LoginSuccess(res.data!));
         print("Access Token: ${res.data!.accessToken}");
         print("Refresh Token: ${res.data!.refreshToken}");
-        StorageService.saveTokens(
+        await StorageService.saveTokens(
             res.data!.accessToken, res.data!.refreshToken);
+        // Save full user directly from model
+        await StorageService.saveUserData(res.data!.toJson());
+
+// Fetch later
+        print("User ID: ${await StorageService.getUserData('id')}");
+        print("Username: ${await StorageService.getUserData('username')}");
+        print(
+            "Access Token: ${await StorageService.getUserData('accessToken')}");
       } else {
         emit(LoginFailure(res.errorMessage ?? "Something went wrong"));
       }

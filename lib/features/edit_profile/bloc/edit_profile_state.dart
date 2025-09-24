@@ -1,6 +1,8 @@
 
 
-import '../../profile/model/profile_response.dart';
+
+
+import '../model/edit_profile_response.dart';
 
 abstract class EditProfileState {}
 
@@ -9,7 +11,7 @@ class EditProfileInitial extends EditProfileState {}
 class EditProfileLoading extends EditProfileState {}
 
 class EditProfileLoaded extends EditProfileState {
-  final ProfileResponse profile;
+  final EditProfileResponse profile;
   EditProfileLoaded(this.profile);
 }
 

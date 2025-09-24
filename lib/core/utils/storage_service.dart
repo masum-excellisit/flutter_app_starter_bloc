@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
@@ -101,13 +103,26 @@ class StorageService {
     return token != null && token.isNotEmpty;
   }
 
-  // User data
-  static Future<void> saveUserData(String userData) async {
-    await setSecureString(AppConstants.userDataKey, userData);
+  // Save user data
+  static Future<void> saveUserData(Map<String, dynamic> userData) async {
+    await setSecureString(
+      AppConstants.userDataKey,
+      jsonEncode(userData),
+    );
   }
 
-  static Future<String?> getUserData() async {
-    return await getSecureString(AppConstants.userDataKey);
+  // Get any field directly
+  static Future<String?> getUserData(String key) async {
+    final data = await getSecureString(AppConstants.userDataKey);
+    if (data == null) return null;
+    final map = jsonDecode(data) as Map<String, dynamic>;
+    return map[key]?.toString();
+  }
+
+  // Get full map if needed
+  static Future<Map<String, dynamic>?> getUserDataMap() async {
+    final data = await getSecureString(AppConstants.userDataKey);
+    return data != null ? jsonDecode(data) : null;
   }
 
   static Future<void> clearUserData() async {
@@ -121,5 +136,13 @@ class StorageService {
 
   static Future<void> setFirstTime(bool value) async {
     await setBool(AppConstants.isFirstTimeKey, value);
+  }
+
+  // clear all data
+  static Future<void> clearAllData() async {
+    await clear();
+    await clearSecureStorage();
+    await clearUserData();
+    print("All storage data cleared.");
   }
 }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../profile/model/profile_response.dart';
+
 import '../bloc/edit_profile_bloc.dart';
 import '../bloc/edit_profile_event.dart';
 import '../model/edit_profile_request.dart';
+import '../model/edit_profile_response.dart';
 
 class EditProfileForm extends StatefulWidget {
-  final ProfileResponse profile;
+  final EditProfileResponse profile;
   const EditProfileForm({super.key, required this.profile});
 
   @override

@@ -28,6 +28,7 @@ class _LoginFormState extends State<LoginForm> {
               controller: _userCtrl,
               decoration: const InputDecoration(labelText: 'Username'),
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _passCtrl,
               decoration: const InputDecoration(labelText: 'Password'),

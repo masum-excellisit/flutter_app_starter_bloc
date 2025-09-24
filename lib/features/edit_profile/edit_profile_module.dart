@@ -6,7 +6,7 @@ import 'data/edit_profile_repository.dart';
 import 'bloc/edit_profile_bloc.dart';
 import 'screens/edit_profile_screen.dart';
 
-class Edit_profileModule {
+class EditProfileModule {
   static Widget route() {
     final apiClient = ApiClient();
     final api = EditProfileApi(apiClient);
