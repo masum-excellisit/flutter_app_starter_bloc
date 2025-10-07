@@ -11,11 +11,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileLoading());
       try {
         final response = await repository.fetchProfile();
+        print("Profile Response: ${response.statusCode}");
 
-        if (response.data != null) {
-          emit(ProfileLoaded(response.data!));
+        if (response.statusCode == 401) {
+          print("Unauthorized access - redirecting to login");
+          emit(ProfileErrorUnauthorized());
         } else {
-          emit(ProfileError(response.errorMessage ?? "Failed to load profile"));
+          if (response.data != null) {
+            emit(ProfileLoaded(response.data!));
+          } else {
+            emit(ProfileError(
+                response.errorMessage ?? "Failed to load profile"));
+          }
         }
       } catch (e) {
         emit(ProfileError(e.toString()));

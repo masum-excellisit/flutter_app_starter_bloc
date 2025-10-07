@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
@@ -37,6 +38,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return ProfileView(profile: state.profile);
           } else if (state is ProfileError) {
             return Center(child: Text(state.message));
+          }
+          // if (state is ProfileErrorUnauthorized) then redirect to login screen
+          else if (state is ProfileErrorUnauthorized) {
+            // Using addPostFrameCallback to ensure navigation happens after build
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.goNamed('login');
+            });
+            return const Center(child: CircularProgressIndicator());
           }
           return Center(
             child: ElevatedButton(

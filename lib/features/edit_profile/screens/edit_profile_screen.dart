@@ -27,11 +27,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Edit Profile")),
-      body: BlocBuilder<EditProfileBloc, EditProfileState>(
+      body: BlocConsumer<EditProfileBloc, EditProfileState>(
+        listener: (context, state) {
+          if (state is EditProfileUpdated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Profile updated successfully")),
+            );
+          } else if (state is EditProfileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is EditProfileLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is EditProfileLoaded) {
+            return EditProfileForm(profile: state.profile);
+          } else if (state is EditProfileUpdated) {
             return EditProfileForm(profile: state.profile);
           } else if (state is EditProfileError) {
             return Center(child: Text(state.message));

@@ -15,6 +15,11 @@ class EditProfileLoaded extends EditProfileState {
   EditProfileLoaded(this.profile);
 }
 
+class EditProfileUpdated extends EditProfileState {
+  final EditProfileResponse profile;
+  EditProfileUpdated(this.profile);
+}
+
 class EditProfileError extends EditProfileState {
   final String message;
   EditProfileError(this.message);
