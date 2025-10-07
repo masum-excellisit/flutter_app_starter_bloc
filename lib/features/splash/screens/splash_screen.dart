@@ -8,7 +8,7 @@ class SplashScreen extends StatefulWidget {
 
   const SplashScreen({
     Key? key,
-    this.nextRoute = '/home',
+    this.nextRoute = '/profile',
     this.duration = const Duration(seconds: 3),
   }) : super(key: key);
 
@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _timer = Timer(widget.duration, () {
       if (!mounted) return;
-      context.goNamed('login');
+      context.goNamed('profile');
     });
   }
 

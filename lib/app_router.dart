@@ -9,7 +9,7 @@ import 'features/splash/screens/splash_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/profile',
+    initialLocation: '/splash',
     routes: [
       GoRoute(
         path: '/splash',
