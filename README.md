@@ -1,56 +1,42 @@
-# flutter_app_starter_bloc
+# Flutter App Starter (BLoC + GoRouter)
 
-# Flutter App Starter with Clean Architecture
+A production-ready Flutter starter that demonstrates clean architecture, modular features, reusable CRUD tooling, offline-first caching, and navigation powered by GoRouter.
 
-A comprehensive Flutter app starter template featuring clean architecture, BLoC pattern, Go Router, and ready-to-use essential functionalities.
+## 🎯 Highlights
 
-## 🎯 Features
+- Clean Architecture separating core utilities from feature modules
+- Universal CRUD stack with a reusable `CrudBloc`, generic repository contract, and pagination helpers
+- GoRouter navigation plus optional bottom navigation driven by feature toggles
+- Network & Storage using Dio, shared preferences, secure storage, and Sqflite for offline lists
+- Feature Modules for auth flows, profile management, and a fully working posts module backed by DummyJSON
+- Consistent UI Shell via a shared `AppScaffold` that injects app bars, FABs, and the reusable bottom navigation bar
+- Extensive Utilities covering theming, validation, helpers, and storage abstraction
 
-### ✨ Core Features
+## 📦 Available Modules
 
-- **Clean Architecture** - Domain, Data, and Presentation layers
-- **BLoC Pattern** - State management with flutter_bloc
-- **Go Router** - Declarative routing
-- **Dependency Injection** - Using GetIt
-- **API Integration** - Dio HTTP client with interceptors
-- **Local Storage** - SharedPreferences & Flutter Secure Storage
-- **Error Handling** - Comprehensive error handling with Either pattern
-- **Form Validation** - Custom validators for forms
-- **Theming** - Light/Dark theme support
+- Splash – App bootstrapping & first-run logic
+- Login / Register – Starter auth flows built with forms and validation
+- Profile / Edit Profile – REST-backed profile editing with storage-backed logout
+- Posts – Universal CRUD example (list, search, create, edit, delete) using pagination, offline cache, and reusable widgets
 
-### 📱 Ready-to-use Screens
-
-- **Splash Screen** - With animations and auth check
-- **Login Screen** - Email/username and password authentication
-- **Register Screen** - User registration with validation
-- **Home Screen** - Dashboard with navigation
-- **Profile Screen** - User profile management
-- **Product Listing** - CRUD operations example
-
-### 🏗️ Architecture Components
-
-- **Entities** - Core business objects
-- **Use Cases** - Business logic
-- **Repositories** - Data access abstraction
-- **Data Sources** - Remote and local data sources
-- **Models** - JSON serialization
-- **BLoC** - State management
-- **Widgets** - Reusable UI components
-
-## 📁 Project Structure
+## 📁 Current Project Structure
 
 ```
 lib/
+├── app_router.dart
 ├── core/
+│   ├── bloc/
+│   │   └── paginated_crud_bloc.dart
 │   ├── constants/
-│   │   ├── app_constants.dart
-│   │   ├── app_strings.dart
-│   │   └── app_styles.dart
-│   ├── errors/
-│   │   ├── exceptions.dart
-│   │   └── failures.dart
+│   │   └── app_constants.dart
+│   ├── domain/
+│   │   └── crud_repository.dart
+│   ├── models/
+│   │   └── paginated_result.dart
 │   ├── network/
-│   │   └── api_client.dart
+│   │   ├── api_client.dart
+│   │   ├── api_response.dart
+│   │   └── api_urls.dart
 │   ├── theme/
 │   │   └── app_theme.dart
 │   ├── utils/
@@ -58,292 +44,164 @@ lib/
 │   │   ├── storage_service.dart
 │   │   └── validators.dart
 │   └── widgets/
-│       └── common_widgets.dart
+│       ├── app_bottom_navigation_bar.dart
+│       ├── app_scaffold.dart
+│       ├── paginated_list_view.dart
+│       └── search_input.dart
 ├── features/
-│   ├── auth/
+│   ├── edit_profile/
+│   ├── login/
+│   ├── posts/
+│   │   ├── api/
+│   │   ├── bloc/
 │   │   ├── data/
-│   │   │   ├── datasources/
-│   │   │   ├── models/
-│   │   │   └── repositories/
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   ├── repositories/
-│   │   │   └── usecases/
-│   │   └── presentation/
-│   │       ├── bloc/
-│   │       ├── pages/
-│   │       └── widgets/
-│   ├── home/
+│   │   ├── models/
+│   │   ├── screens/
+│   │   └── widgets/
 │   ├── profile/
-│   ├── products/
+│   ├── register/
 │   └── splash/
-├── app_router.dart
 ├── injection_container.dart
 └── main.dart
 ```
 
+## ⚙️ Configuration
+
+- API endpoints: update `lib/core/network/api_urls.dart` or `AppConstants.baseUrl`
+- Feature toggles: switch features such as the bottom navigation via `AppConstants.enableBottomNavigation`
+- Dependencies: install with `flutter pub get`
+
+### Auth (Login/Register) configuration
+
+- Endpoints used (DummyJSON):
+  - Login: `POST /auth/login`
+  - Register: `POST /users/add`
+- Tokens are stored using `StorageService`:
+  - Access token key: `AppConstants.accessTokenKey`
+  - Refresh token key: `AppConstants.refreshTokenKey`
+- After successful login, a token is added to all requests via `ApiClient` interceptor (Bearer token header).
+- Logout clears all persisted state and secure tokens and navigates to `login`.
+
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- Flutter SDK (>=3.5.4)
-- Dart SDK
-- Android Studio / VS Code
-- iOS Simulator / Android Emulator
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd flutter_app_starter_bloc
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   flutter pub get
-   ```
-
-3. **Run the app**
-   ```bash
-   flutter run
-   ```
-
-### Configuration
-
-1. **API Configuration**
-   Update the base URL in `lib/core/constants/app_constants.dart`:
-
-   ```dart
-   static const String baseUrl = 'https://your-api-url.com';
-   ```
-
-2. **App Configuration**
-   Update app details in `lib/core/constants/app_constants.dart` and `pubspec.yaml`.
-
-## 📚 Usage Examples
-
-### Adding a New Feature
-
-1. **Create feature folder structure**:
-
-   ```
-   lib/features/my_feature/
-   ├── data/
-   │   ├── datasources/
-   │   ├── models/
-   │   └── repositories/
-   ├── domain/
-   │   ├── entities/
-   │   ├── repositories/
-   │   └── usecases/
-   └── presentation/
-       ├── bloc/
-       ├── pages/
-       └── widgets/
-   ```
-
-2. **Create entity**:
-
-   ```dart
-   class MyEntity extends Equatable {
-     final int id;
-     final String name;
-
-     const MyEntity({required this.id, required this.name});
-
-     @override
-     List<Object> get props => [id, name];
-   }
-   ```
-
-3. **Create repository interface**:
-
-   ```dart
-   abstract class MyRepository {
-     Future<Either<Failure, List<MyEntity>>> getItems();
-   }
-   ```
-
-4. **Create use case**:
-
-   ```dart
-   class GetItemsUseCase {
-     final MyRepository repository;
-     GetItemsUseCase(this.repository);
-
-     Future<Either<Failure, List<MyEntity>>> call() async {
-       return await repository.getItems();
-     }
-   }
-   ```
-
-5. **Register dependencies** in `injection_container.dart`
-
-### Using BLoC
-
-```dart
-class MyBloc extends Bloc<MyEvent, MyState> {
-  final GetItemsUseCase getItemsUseCase;
-
-  MyBloc({required this.getItemsUseCase}) : super(MyInitial()) {
-    on<LoadItems>(_onLoadItems);
-  }
-
-  Future<void> _onLoadItems(LoadItems event, Emitter<MyState> emit) async {
-    emit(MyLoading());
-    final result = await getItemsUseCase();
-    result.fold(
-      (failure) => emit(MyError(message: failure.message)),
-      (items) => emit(MyLoaded(items: items)),
-    );
-  }
-}
-```
-
-### Navigation with Go Router
-
-```dart
-// Navigate to a page
-context.go('/home');
-context.push('/profile');
-
-// Navigate with parameters
-context.go('/product/${productId}');
-
-// Replace current route
-context.go('/login');
-```
-
-### API Integration
-
-```dart
-class MyRemoteDataSource {
-  final ApiClient apiClient;
-  MyRemoteDataSource({required this.apiClient});
-
-  Future<List<MyModel>> getItems() async {
-    final response = await apiClient.get('/items');
-    return (response.data as List)
-        .map((json) => MyModel.fromJson(json))
-        .toList();
-  }
-}
-```
-
-### Local Storage
-
-```dart
-// Simple storage
-await StorageService.setString('key', 'value');
-final value = StorageService.getString('key');
-
-// Secure storage
-await StorageService.setSecureString('token', 'secure_token');
-final token = await StorageService.getSecureString('token');
-```
-
-## 🎨 Customization
-
-### Themes
-
-Modify `lib/core/theme/app_theme.dart` to customize colors, fonts, and component themes.
-
-### Colors
-
-Update `lib/core/constants/app_styles.dart` to change the color palette:
-
-```dart
-class AppColors {
-  static const Color primary = Color(0xFF2196F3);
-  static const Color secondary = Color(0xFFFF9800);
-  // Add more colors...
-}
-```
-
-### Strings
-
-Add/modify strings in `lib/core/constants/app_strings.dart` for easy localization.
-
-## 🔧 Development
-
-### Code Generation
-
-If you need JSON serialization with code generation:
+1. Clone the repo
 
 ```bash
-flutter packages pub run build_runner build
+git clone <repository-url>
+cd flutter_app_starter_bloc
 ```
 
-### Testing
+2. Install packages
 
 ```bash
-# Run all tests
+flutter pub get
+```
+
+3. Run locally
+
+```bash
+flutter run
+```
+
+## ▶️ Try the flows
+
+- Splash → Login/Register → Profile
+- Posts list with search, create, edit, delete
+- Toggle bottom nav on/off via `AppConstants.enableBottomNavigation`
+
+## 🗺️ Default routes (see `app_router.dart`)
+
+- `/splash`
+- `/login`
+- `/register`
+- `/profile`
+- `/edit_profile`
+- `/posts`
+
+## 🧩 Reusable CRUD Workflow
+
+The Posts feature showcases the generic CRUD stack that can be reused for any entity:
+
+1. Repository contract: implement `CrudRepository<T, CreatePayload, UpdatePayload, Id>`
+2. Bloc: extend `CrudBloc` and provide `idSelector`, optional `updateMerger`, and page size
+3. Local cache: implement cache methods (e.g., via Sqflite) to support offline hydration
+4. UI: compose screens with `AppScaffold`, `PaginatedListView`, and custom widgets/forms
+5. Routing: register the module in `app_router.dart` using GoRouter
+
+The module automatically supports pagination, pull-to-refresh, debounced search, inline notifications, and offline fallbacks.
+
+## 🧭 Navigation
+
+- Application routes are registered in `app_router.dart`
+- `AppScaffold` consumes GoRouter to keep the bottom navigation bar in sync with the current location
+- Disable the bottom navigation (for kiosk flows, auth screens, etc.) by toggling `AppConstants.enableBottomNavigation`
+- Use `context.goNamed('routeName')` or `context.pushNamed('routeName')` within features
+
+### Adding a bottom tab
+
+1. Open `lib/core/widgets/app_bottom_navigation_bar.dart`
+2. Append a new `_BottomNavItem(label, icon, path)` to `_navItems`
+3. Register a matching GoRoute in `app_router.dart`
+4. Use `AppScaffold` in your screen to get the nav automatically
+
+## 📥 Offline Experience
+
+- Posts lists are cached in Sqflite (`PostsLocalDataSource`) so users can browse the last fetched data when offline
+- `CrudBloc` automatically surfaces offline state and reuses cached data on failures
+
+## 🛠️ Development Commands
+
+```bash
+# format & analyze
+flutter format .
+flutter analyze
+
+# run tests
 flutter test
 
-# Run tests with coverage
-flutter test --coverage
-
-# View coverage report
-genhtml coverage/lcov.info -o coverage/html
+# codegen (when needed)
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-### Linting
+## 🧪 Auth Flow Details
+
+- The login/register modules use standard forms and `Validators` from `core/utils/validators.dart`.
+- On successful login, tokens are saved via `StorageService.saveTokens()`; `ApiClient` adds `Authorization: Bearer <token>`.
+- `ProfileBloc` checks for 401 responses to redirect back to `login`.
+- `ProfileView` exposes a Logout button that calls `StorageService.clearAllData()` then `context.goNamed('login')`.
+
+## 🏁 New Project Setup (reuse this starter)
+
+1. Copy the `lib/` folder structure (or cherry-pick features you want).
+2. Ensure `pubspec.yaml` contains the required dependencies:
+   - `flutter_bloc`, `go_router`, `dio`, `shared_preferences`, `flutter_secure_storage`, `sqflite`, `path`, `equatable`, `intl`
+3. Update API endpoints in `core/network/api_urls.dart` and any constants in `core/constants/app_constants.dart`.
+4. Keep `main.dart` bootstrapping (calls `StorageService.init()` and wires `MaterialApp.router` with `AppRouter.router`).
+5. Register routes for your modules in `app_router.dart`.
+6. Build features following the Posts pattern: API → Repository → Bloc → Screens/Widgets. Use `CrudBloc` for fast CRUD.
+7. If you need offline lists, create a simple local data source like `PostsLocalDataSource` with Sqflite.
+8. Wrap screens with `AppScaffold` to get the shared bottom navigation (toggle via `enableBottomNavigation`).
+9. For auth: wire your login/register APIs, save tokens, and guard routes in your blocs/screens as shown in Profile.
+10. Run and verify:
 
 ```bash
-flutter analyze
+flutter clean
+flutter pub get
+flutter run
 ```
-
-## 📦 Dependencies
-
-### Main Dependencies
-
-- `flutter_bloc` - State management
-- `go_router` - Routing
-- `dio` - HTTP client
-- `get_it` - Dependency injection
-- `shared_preferences` - Local storage
-- `flutter_secure_storage` - Secure storage
-- `equatable` - Value equality
-- `dartz` - Functional programming
-
-### Dev Dependencies
-
-- `flutter_test` - Testing framework
-- `flutter_lints` - Linting rules
-- `build_runner` - Code generation
-- `json_serializable` - JSON serialization
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit (`git commit -m "Add my feature"`)
+4. Push (`git push origin feature/my-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Flutter](https://flutter.dev/) - The framework
-- [BLoC Library](https://bloclibrary.dev/) - State management
-- [DummyJSON](https://dummyjson.com/) - Sample API for testing
-
-## 📞 Support
-
-If you have any questions or need help with the starter template:
-
-1. Check the [documentation](docs/)
-2. Open an issue on GitHub
-3. Start a discussion in the repository
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Happy Coding!** 🚀
-
-Built with ❤️ using Flutter
+Happy building! 🚀
