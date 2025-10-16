@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/bloc/paginated_crud_bloc.dart';
+import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../../core/widgets/search_input.dart';
 import '../bloc/posts_bloc.dart';
@@ -130,7 +131,7 @@ class _PostsScreenState extends State<PostsScreen> {
           _bloc.add(const ClearFeedbackEvent<PostRequest, PostRequest, int>());
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: const Text('Posts')),
         floatingActionButton: FloatingActionButton(
           onPressed: _openCreatePost,

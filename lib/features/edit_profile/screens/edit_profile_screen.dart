@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_scaffold.dart';
 import '../bloc/edit_profile_bloc.dart';
 import '../bloc/edit_profile_event.dart';
 import '../bloc/edit_profile_state.dart';
@@ -26,7 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text("Edit Profile"),
         leading: IconButton(

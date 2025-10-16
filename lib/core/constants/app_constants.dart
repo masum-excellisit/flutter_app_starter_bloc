@@ -14,6 +14,9 @@ class AppConstants {
   static const String appName = 'Flutter Starter';
   static const String appVersion = '1.0.0';
 
+  // Feature Toggles
+  static const bool enableBottomNavigation = true;
+
   // Pagination
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
