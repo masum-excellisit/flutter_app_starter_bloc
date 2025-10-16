@@ -26,9 +26,16 @@ class ProfileView extends StatelessWidget {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              context.goNamed('edit_profile');
+              context.pushNamed('edit_profile');
             },
             child: const Text('Edit Profile'),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              context.pushNamed('posts');
+            },
+            child: const Text('Posts'),
           ),
           const SizedBox(height: 10),
           ElevatedButton(

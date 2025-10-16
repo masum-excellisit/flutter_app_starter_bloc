@@ -6,6 +6,7 @@ import 'features/login/login_module.dart';
 import 'features/profile/profile_module.dart';
 import 'features/register/register_module.dart';
 import 'features/splash/screens/splash_screen.dart';
+import 'features/posts/posts_module.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -35,6 +36,11 @@ class AppRouter {
         path: '/edit_profile',
         name: 'edit_profile',
         builder: (context, state) => EditProfileModule.route(),
+      ),
+      GoRoute(
+        path: '/posts',
+        name: 'posts',
+        builder: (context, state) => PostsModule.route(),
       ),
 
       // GoRoute(

@@ -16,4 +16,7 @@ class EndPoints {
   static const register = "/users/add";
   static const profile = "/user/me";
   static const updateProfile = "/users";
+  static const posts = '/posts';
+  static const postsAdd = '/posts/add';
+  static const postsSearch = '/posts/search';
 }
