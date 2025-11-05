@@ -36,11 +36,12 @@ class LoadMoreItemsEvent<CreatePayload, UpdatePayload, Id>
 class SearchItemsEvent<CreatePayload, UpdatePayload, Id>
     extends CrudEvent<CreatePayload, UpdatePayload, Id> {
   final String query;
+  final List<String>? searchFields;
 
-  const SearchItemsEvent(this.query);
+  const SearchItemsEvent(this.query, {this.searchFields});
 
   @override
-  List<Object?> get props => [query];
+  List<Object?> get props => [query, searchFields];
 }
 
 class CreateItemEvent<CreatePayload, UpdatePayload, Id>
@@ -95,6 +96,7 @@ class CrudState<T> extends Equatable {
   final String? query;
   final String? feedbackMessage;
   final bool feedbackIsError;
+  final List<String>? searchFields;
 
   const CrudState({
     this.status = CrudStatus.initial,
@@ -107,6 +109,7 @@ class CrudState<T> extends Equatable {
     this.query,
     this.feedbackMessage,
     this.feedbackIsError = false,
+    this.searchFields,
   });
 
   CrudState<T> copyWith({
@@ -120,6 +123,7 @@ class CrudState<T> extends Equatable {
     String? query,
     Object? feedbackMessage = _unset,
     bool? feedbackIsError,
+    List<String>? searchFields,
   }) {
     return CrudState<T>(
       status: status ?? this.status,
@@ -135,6 +139,7 @@ class CrudState<T> extends Equatable {
           ? this.feedbackMessage
           : feedbackMessage as String?,
       feedbackIsError: feedbackIsError ?? this.feedbackIsError,
+      searchFields: searchFields ?? this.searchFields,
     );
   }
 
@@ -150,6 +155,7 @@ class CrudState<T> extends Equatable {
         query,
         feedbackMessage,
         feedbackIsError,
+        searchFields,
       ];
 }
 
@@ -161,6 +167,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     List<T> Function(List<T> items, T newItem)? insertItem,
     T Function(T current, T updated)? updateMerger,
     this.pageSize = 20,
+    this.itemSearchFilter,
   })  : _repository = repository,
         _idSelector = idSelector,
         _insertItem = insertItem,
@@ -180,10 +187,13 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
   final List<T> Function(List<T> items, T newItem)? _insertItem;
   final T Function(T current, T updated)? _updateMerger;
   final int pageSize;
+  final bool Function(T item, String query, List<String>? fields)?
+      itemSearchFilter;
 
   bool _isFetching = false;
   int _page = 0;
   String? _currentQuery;
+  List<String>? _currentSearchFields;
 
   Future<void> _onLoadItems(
     LoadItemsEvent<CreatePayload, UpdatePayload, Id> event,
@@ -207,19 +217,27 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     Emitter<CrudState<T>> emit,
   ) async {
     _currentQuery = event.query.trim().isEmpty ? null : event.query.trim();
-    await _fetchPage(emit, refresh: true, search: _currentQuery);
+    _currentSearchFields = event.searchFields;
+    await _fetchPage(
+      emit,
+      refresh: true,
+      search: _currentQuery,
+      searchFields: _currentSearchFields,
+    );
   }
 
   Future<void> _fetchPage(
     Emitter<CrudState<T>> emit, {
     required bool refresh,
     String? search,
+    List<String>? searchFields,
   }) async {
     if (_isFetching) {
       return;
     }
 
     final targetQuery = search ?? _currentQuery;
+    final targetFields = searchFields ?? _currentSearchFields;
     if (refresh) {
       _page = 0;
     } else if (!state.hasMore) {
@@ -233,6 +251,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
       emit(state.copyWith(
         status: CrudStatus.loading,
         query: targetQuery,
+        searchFields: targetFields,
         isOffline: false,
         errorMessage: CrudState._unset,
         feedbackMessage: CrudState._unset,
@@ -241,6 +260,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
       emit(state.copyWith(
         isLoadingMore: true,
         query: targetQuery,
+        searchFields: targetFields,
         isOffline: false,
         errorMessage: CrudState._unset,
         feedbackMessage: CrudState._unset,
@@ -253,12 +273,27 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         pageSize: pageSize,
         search: targetQuery,
       );
+
+      List<T> filteredItems = result.items;
+
+      // Apply client-side filtering if searchFields are specified and a filter function is provided
+      if (targetQuery != null &&
+          targetQuery.isNotEmpty &&
+          targetFields != null &&
+          targetFields.isNotEmpty &&
+          itemSearchFilter != null) {
+        filteredItems = result.items
+            .where((item) => itemSearchFilter!(item, targetQuery, targetFields))
+            .toList();
+      }
+
       final List<T> updatedItems =
-          _page == 0 ? result.items : <T>[...state.items, ...result.items];
+          _page == 0 ? filteredItems : <T>[...state.items, ...filteredItems];
 
       await _repository.cacheItems(updatedItems);
 
       _currentQuery = targetQuery;
+      _currentSearchFields = targetFields;
       _page += 1;
 
       emit(state.copyWith(
@@ -269,6 +304,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         isLoadingMore: false,
         errorMessage: CrudState._unset,
         query: targetQuery,
+        searchFields: targetFields,
       ));
     } catch (error) {
       if (_page == 0) {

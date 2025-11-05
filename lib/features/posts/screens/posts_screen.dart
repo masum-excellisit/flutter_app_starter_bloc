@@ -23,6 +23,7 @@ class PostsScreen extends StatefulWidget {
 class _PostsScreenState extends State<PostsScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  final List<String> _searchFields = ['title'];
 
   @override
   void dispose() {
@@ -36,7 +37,10 @@ class _PostsScreenState extends State<PostsScreen> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
-      _bloc.add(SearchItemsEvent<PostRequest, PostRequest, int>(value));
+      _bloc.add(SearchItemsEvent<PostRequest, PostRequest, int>(
+        value,
+        searchFields: _searchFields,
+      ));
     });
   }
 
@@ -144,7 +148,8 @@ class _PostsScreenState extends State<PostsScreen> {
               child: ReusableSearchInput(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
-                hintText: 'Search posts',
+                hintText: 'Search ${_searchFields!.join(', ')}',
+                toSearch: _searchFields,
               ),
             ),
             BlocBuilder<PostsBloc, CrudState<PostModel>>(
