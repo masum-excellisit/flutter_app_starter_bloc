@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/create_post/create_post_module.dart';
+import 'features/create_product/create_product_module.dart';
 import 'features/edit_profile/edit_profile_module.dart';
 import 'features/login/login_module.dart';
 import 'features/profile/profile_module.dart';
@@ -47,6 +48,11 @@ class AppRouter {
         path: '/create-post',
         name: 'create-post',
         builder: (context, state) => CreatePostModule.route(),
+      ),
+      GoRoute(
+        path: '/create-product',
+        name: 'create-product',
+        builder: (context, state) => CreateProductModule.route(),
       ),
 
       // GoRoute(

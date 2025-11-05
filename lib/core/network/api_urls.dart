@@ -19,4 +19,6 @@ class EndPoints {
   static const posts = '/posts';
   static const postsAdd = '/posts/add';
   static const postsSearch = '/posts/search';
+  static const products = '/products';
+  static const productsAdd = '/products/add';
 }

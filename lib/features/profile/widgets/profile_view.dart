@@ -46,6 +46,12 @@ class ProfileView extends StatelessWidget {
             child: const Text('Create Post'),
           ),
           ElevatedButton(
+            onPressed: () {
+              context.pushNamed('create-product');
+            },
+            child: const Text('Create Product'),
+          ),
+          ElevatedButton(
             onPressed: () async {
               await StorageService.clearAllData();
               if (!context.mounted) return;
