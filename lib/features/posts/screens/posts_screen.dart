@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/bloc/paginated_crud_bloc.dart';
+import '../../../core/errors/failures.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../../core/widgets/search_input.dart';
@@ -185,10 +186,13 @@ class _PostsScreenState extends State<PostsScreen> {
     }
 
     if (state.status == CrudStatus.failure && state.items.isEmpty) {
+      final isNetworkError = state.lastFailure is NetworkFailure;
+
       return _ErrorView(
         message: state.errorMessage ?? 'Unable to load posts.',
         onRetry: () => _bloc.add(
             const LoadItemsEvent<PostRequest, PostRequest, int>(refresh: true)),
+        icon: isNetworkError ? Icons.wifi_off : Icons.error_outline,
       );
     }
 
@@ -246,8 +250,13 @@ class _EmptyState extends StatelessWidget {
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
+  final IconData? icon;
 
-  const _ErrorView({required this.message, required this.onRetry});
+  const _ErrorView({
+    required this.message,
+    required this.onRetry,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -257,14 +266,21 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(
+              icon ?? Icons.error_outline,
+              size: 64,
+              color: Theme.of(context).colorScheme.error.withOpacity(0.7),
+            ),
+            const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: onRetry,
-              child: const Text('Retry'),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
             ),
           ],
         ),

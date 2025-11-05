@@ -12,7 +12,7 @@ import 'screens/posts_screen.dart';
 
 class PostsModule {
   static Widget route() {
-    final apiClient = ApiClient();
+    final apiClient = ApiClient(); // Now includes NetworkInfo by default
     final api = PostsApi(apiClient);
     final localDataSource = PostsLocalDataSource();
     final repository = PostsRepository(api, localDataSource);

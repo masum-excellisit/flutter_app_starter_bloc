@@ -1,4 +1,5 @@
 import '../../../core/domain/crud_repository.dart';
+import '../../../core/errors/exceptions.dart';
 import '../../../core/models/paginated_result.dart';
 import '../../../core/network/api_response.dart';
 import '../api/posts_api.dart';
@@ -26,7 +27,10 @@ class PostsRepository
       return response.data!;
     }
 
-    throw Exception(response.errorMessage ?? 'Failed to load posts');
+    throw ServerException(
+      response.errorMessage ?? 'Failed to load posts',
+      statusCode: response.statusCode,
+    );
   }
 
   @override
@@ -37,7 +41,10 @@ class PostsRepository
       return response.data!;
     }
 
-    throw Exception(response.errorMessage ?? 'Failed to create post');
+    throw ServerException(
+      response.errorMessage ?? 'Failed to create post',
+      statusCode: response.statusCode,
+    );
   }
 
   @override
@@ -48,7 +55,10 @@ class PostsRepository
       return response.data!;
     }
 
-    throw Exception(response.errorMessage ?? 'Failed to update post');
+    throw ServerException(
+      response.errorMessage ?? 'Failed to update post',
+      statusCode: response.statusCode,
+    );
   }
 
   @override
@@ -60,7 +70,10 @@ class PostsRepository
       return;
     }
 
-    throw Exception(response.errorMessage ?? 'Failed to delete post');
+    throw ServerException(
+      response.errorMessage ?? 'Failed to delete post',
+      statusCode: response.statusCode,
+    );
   }
 
   @override

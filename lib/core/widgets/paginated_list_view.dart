@@ -16,6 +16,10 @@ class PaginatedListView<T> extends StatefulWidget {
   final Widget? emptyState;
   final EdgeInsetsGeometry? padding;
   final WidgetBuilder? loadingIndicatorBuilder;
+  final Widget? separator;
+  final ScrollPhysics? physics;
+  final bool shrinkWrap;
+  final ScrollController? scrollController;
 
   const PaginatedListView({
     super.key,
@@ -28,6 +32,10 @@ class PaginatedListView<T> extends StatefulWidget {
     this.emptyState,
     this.padding,
     this.loadingIndicatorBuilder,
+    this.separator,
+    this.physics,
+    this.shrinkWrap = false,
+    this.scrollController,
   });
 
   @override
@@ -36,18 +44,26 @@ class PaginatedListView<T> extends StatefulWidget {
 
 class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   late final ScrollController _controller;
+  bool _isInternalController = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = ScrollController()..addListener(_onScroll);
+    if (widget.scrollController != null) {
+      _controller = widget.scrollController!;
+    } else {
+      _controller = ScrollController();
+      _isInternalController = true;
+    }
+    _controller.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _controller
-      ..removeListener(_onScroll)
-      ..dispose();
+    _controller.removeListener(_onScroll);
+    if (_isInternalController) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -65,9 +81,15 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   Widget build(BuildContext context) {
     final list = widget.items;
 
+    if (list.isEmpty && !widget.isLoadingMore) {
+      return widget.emptyState ?? const Center(child: Text('No items found.'));
+    }
+
     Widget child = ListView.separated(
       controller: _controller,
       padding: widget.padding ?? const EdgeInsets.all(16),
+      physics: widget.physics,
+      shrinkWrap: widget.shrinkWrap,
       itemBuilder: (BuildContext context, int index) {
         if (index == list.length) {
           return widget.loadingIndicatorBuilder?.call(context) ??
@@ -78,7 +100,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
         }
         return widget.itemBuilder(context, list[index], index);
       },
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) =>
+          widget.separator ?? const SizedBox(height: 12),
       itemCount: list.length + (widget.isLoadingMore && widget.hasMore ? 1 : 0),
     );
 
@@ -87,10 +110,6 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
         onRefresh: widget.onRefresh!,
         child: child,
       );
-    }
-
-    if (list.isEmpty && !widget.isLoadingMore) {
-      return widget.emptyState ?? const Center(child: Text('No items found.'));
     }
 
     return child;

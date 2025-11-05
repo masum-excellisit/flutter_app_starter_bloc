@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/crud_repository.dart';
 import '../models/paginated_result.dart';
+import '../errors/exceptions.dart';
+import '../errors/failures.dart';
 
 enum CrudStatus { initial, loading, success, failure }
 
-enum CrudOperation { none, create, update, delete }
+enum CrudOperation { none, create, update, delete, bulkDelete }
 
 abstract class CrudEvent<CreatePayload, UpdatePayload, Id> extends Equatable {
   const CrudEvent();
@@ -83,6 +85,35 @@ class ClearFeedbackEvent<CreatePayload, UpdatePayload, Id>
   List<Object?> get props => [];
 }
 
+class SortItemsEvent<CreatePayload, UpdatePayload, Id>
+    extends CrudEvent<CreatePayload, UpdatePayload, Id> {
+  final String sortBy;
+  final bool ascending;
+
+  const SortItemsEvent(this.sortBy, {this.ascending = true});
+
+  @override
+  List<Object?> get props => [sortBy, ascending];
+}
+
+class BulkDeleteItemsEvent<CreatePayload, UpdatePayload, Id>
+    extends CrudEvent<CreatePayload, UpdatePayload, Id> {
+  final List<Id> ids;
+
+  const BulkDeleteItemsEvent(this.ids);
+
+  @override
+  List<Object?> get props => [ids];
+}
+
+class RetryFailedOperationEvent<CreatePayload, UpdatePayload, Id>
+    extends CrudEvent<CreatePayload, UpdatePayload, Id> {
+  const RetryFailedOperationEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
 class CrudState<T> extends Equatable {
   static const Object _unset = Object();
 
@@ -97,6 +128,12 @@ class CrudState<T> extends Equatable {
   final String? feedbackMessage;
   final bool feedbackIsError;
   final List<String>? searchFields;
+  final String? sortBy;
+  final bool sortAscending;
+  final Map<String, dynamic>? filters;
+  final Failure? lastFailure;
+  final int retryCount;
+  final bool isRetrying;
 
   const CrudState({
     this.status = CrudStatus.initial,
@@ -110,6 +147,12 @@ class CrudState<T> extends Equatable {
     this.feedbackMessage,
     this.feedbackIsError = false,
     this.searchFields,
+    this.sortBy,
+    this.sortAscending = true,
+    this.filters,
+    this.lastFailure,
+    this.retryCount = 0,
+    this.isRetrying = false,
   });
 
   CrudState<T> copyWith({
@@ -124,6 +167,12 @@ class CrudState<T> extends Equatable {
     Object? feedbackMessage = _unset,
     bool? feedbackIsError,
     List<String>? searchFields,
+    String? sortBy,
+    bool? sortAscending,
+    Map<String, dynamic>? filters,
+    Object? lastFailure = _unset,
+    int? retryCount,
+    bool? isRetrying,
   }) {
     return CrudState<T>(
       status: status ?? this.status,
@@ -140,6 +189,13 @@ class CrudState<T> extends Equatable {
           : feedbackMessage as String?,
       feedbackIsError: feedbackIsError ?? this.feedbackIsError,
       searchFields: searchFields ?? this.searchFields,
+      sortBy: sortBy ?? this.sortBy,
+      sortAscending: sortAscending ?? this.sortAscending,
+      filters: filters ?? this.filters,
+      lastFailure:
+          lastFailure == _unset ? this.lastFailure : lastFailure as Failure?,
+      retryCount: retryCount ?? this.retryCount,
+      isRetrying: isRetrying ?? this.isRetrying,
     );
   }
 
@@ -156,6 +212,12 @@ class CrudState<T> extends Equatable {
         feedbackMessage,
         feedbackIsError,
         searchFields,
+        sortBy,
+        sortAscending,
+        filters,
+        lastFailure,
+        retryCount,
+        isRetrying,
       ];
 }
 
@@ -168,6 +230,10 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     T Function(T current, T updated)? updateMerger,
     this.pageSize = 20,
     this.itemSearchFilter,
+    this.itemSorter,
+    this.enableOptimisticUpdates = false,
+    this.maxRetryAttempts = 3,
+    this.retryDelay = const Duration(seconds: 2),
   })  : _repository = repository,
         _idSelector = idSelector,
         _insertItem = insertItem,
@@ -180,6 +246,9 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     on<UpdateItemEvent<CreatePayload, UpdatePayload, Id>>(_onUpdateItem);
     on<DeleteItemEvent<CreatePayload, UpdatePayload, Id>>(_onDeleteItem);
     on<ClearFeedbackEvent<CreatePayload, UpdatePayload, Id>>(_onClearFeedback);
+    on<SortItemsEvent<CreatePayload, UpdatePayload, Id>>(_onSortItems);
+    on<BulkDeleteItemsEvent<CreatePayload, UpdatePayload, Id>>(_onBulkDelete);
+    on<RetryFailedOperationEvent<CreatePayload, UpdatePayload, Id>>(_onRetry);
   }
 
   final CrudRepository<T, CreatePayload, UpdatePayload, Id> _repository;
@@ -189,11 +258,16 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
   final int pageSize;
   final bool Function(T item, String query, List<String>? fields)?
       itemSearchFilter;
+  final int Function(T a, T b, String sortBy)? itemSorter;
+  final bool enableOptimisticUpdates;
+  final int maxRetryAttempts;
+  final Duration retryDelay;
 
   bool _isFetching = false;
   int _page = 0;
   String? _currentQuery;
   List<String>? _currentSearchFields;
+  CrudEvent<CreatePayload, UpdatePayload, Id>? _lastFailedEvent;
 
   Future<void> _onLoadItems(
     LoadItemsEvent<CreatePayload, UpdatePayload, Id> event,
@@ -307,6 +381,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         searchFields: targetFields,
       ));
     } catch (error) {
+      final failure = _handleError(error);
+
       if (_page == 0) {
         try {
           final List<T> cachedItems = await _repository.getCachedItems();
@@ -317,7 +393,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
               hasMore: false,
               isOffline: true,
               isLoadingMore: false,
-              errorMessage: error.toString(),
+              errorMessage: failure.message,
+              lastFailure: failure,
             ));
             _isFetching = false;
             return;
@@ -330,13 +407,123 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
       emit(state.copyWith(
         status: CrudStatus.failure,
         isLoadingMore: false,
-        errorMessage: error.toString(),
+        errorMessage: failure.message,
+        lastFailure: failure,
       ));
     } finally {
       _isFetching = false;
     }
   }
 
+  Future<void> _onSortItems(
+    SortItemsEvent<CreatePayload, UpdatePayload, Id> event,
+    Emitter<CrudState<T>> emit,
+  ) async {
+    if (itemSorter == null) return;
+
+    final sortedItems = List<T>.from(state.items)
+      ..sort((a, b) {
+        final result = itemSorter!(a, b, event.sortBy);
+        return event.ascending ? result : -result;
+      });
+
+    emit(state.copyWith(
+      items: sortedItems,
+      sortBy: event.sortBy,
+      sortAscending: event.ascending,
+    ));
+  }
+
+  Future<void> _onBulkDelete(
+    BulkDeleteItemsEvent<CreatePayload, UpdatePayload, Id> event,
+    Emitter<CrudState<T>> emit,
+  ) async {
+    if (event.ids.isEmpty) return;
+
+    emit(state.copyWith(
+      operationInProgress: CrudOperation.bulkDelete,
+      feedbackMessage: CrudState._unset,
+    ));
+
+    try {
+      final updatedItems = state.items
+          .where((item) => !event.ids.contains(_idSelector(item) as Id))
+          .toList();
+
+      if (enableOptimisticUpdates) {
+        emit(state.copyWith(items: updatedItems));
+      }
+
+      for (final id in event.ids) {
+        await _repository.delete(id);
+      }
+
+      await _repository.cacheItems(updatedItems);
+
+      emit(state.copyWith(
+        status: CrudStatus.success,
+        items: updatedItems,
+        operationInProgress: CrudOperation.none,
+        feedbackMessage: 'Deleted ${event.ids.length} item(s) successfully',
+        feedbackIsError: false,
+      ));
+    } catch (error) {
+      final failure = _handleError(error);
+      _lastFailedEvent = event;
+
+      emit(state.copyWith(
+        operationInProgress: CrudOperation.none,
+        feedbackMessage: failure.message,
+        feedbackIsError: true,
+        lastFailure: failure,
+      ));
+    }
+  }
+
+  Future<void> _onRetry(
+    RetryFailedOperationEvent<CreatePayload, UpdatePayload, Id> event,
+    Emitter<CrudState<T>> emit,
+  ) async {
+    if (_lastFailedEvent == null || state.retryCount >= maxRetryAttempts) {
+      return;
+    }
+
+    emit(state.copyWith(
+      isRetrying: true,
+      retryCount: state.retryCount + 1,
+    ));
+
+    await Future.delayed(retryDelay * (state.retryCount + 1));
+
+    add(_lastFailedEvent!);
+
+    emit(state.copyWith(isRetrying: false));
+  }
+
+  Failure _handleError(dynamic error) {
+    if (error is ServerException) {
+      return ServerFailure(error.message);
+    }
+    if (error is NetworkException) {
+      return NetworkFailure(error.message);
+    }
+    if (error is CacheException) {
+      return CacheFailure(error.message);
+    }
+    if (error is ValidationException) {
+      return ValidationFailure(error.message);
+    }
+    if (error is AuthException) {
+      return AuthFailure(error.message);
+    }
+    if (error.toString().contains('SocketException')) {
+      return const NetworkFailure(
+          'No internet connection. Please check your network.');
+    }
+    return UnknownFailure('An unexpected error occurred: ${error.toString()}');
+  }
+
+  @override
   Future<void> _onCreateItem(
     CreateItemEvent<CreatePayload, UpdatePayload, Id> event,
     Emitter<CrudState<T>> emit,
@@ -344,6 +531,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     emit(state.copyWith(
       operationInProgress: CrudOperation.create,
       feedbackMessage: CrudState._unset,
+      lastFailure: CrudState._unset,
     ));
 
     try {
@@ -364,12 +552,18 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         operationInProgress: CrudOperation.none,
         feedbackMessage: 'Created successfully',
         feedbackIsError: false,
+        retryCount: 0,
       ));
+      _lastFailedEvent = null;
     } catch (error) {
+      final failure = _handleError(error);
+      _lastFailedEvent = event;
+
       emit(state.copyWith(
         operationInProgress: CrudOperation.none,
-        feedbackMessage: error.toString(),
+        feedbackMessage: failure.message,
         feedbackIsError: true,
+        lastFailure: failure,
       ));
     }
   }

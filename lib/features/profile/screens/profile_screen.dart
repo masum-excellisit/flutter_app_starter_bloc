@@ -30,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(title: const Text("Profile")),
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
+          print('ProfileScreen State: $state');
           if (state is ProfileLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProfileLoaded) {

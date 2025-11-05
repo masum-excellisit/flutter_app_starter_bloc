@@ -1,17 +1,23 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
+import '../errors/exceptions.dart';
 import '../utils/storage_service.dart';
 import 'api_response.dart';
 import 'api_urls.dart';
+import 'network_info.dart';
 
 class ApiClient {
   final Dio _dio = Dio();
+  final NetworkInfo networkInfo;
 
   // Constructor to initialize Dio with base URL and interceptors
-  ApiClient() {
+  ApiClient({NetworkInfo? networkInfo})
+      : networkInfo = networkInfo ?? NetworkInfoImpl(Connectivity()) {
     _dio.options.baseUrl = EndPoints.baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 60);
     _dio.options.receiveTimeout = const Duration(seconds: 60);
@@ -42,16 +48,27 @@ class ApiClient {
     ));
   }
 
+  Future<void> _checkConnectivity() async {
+    print("Checking network connectivity...");
+    if (!await networkInfo.isConnected) {
+      print("No internet connection detected.");
+      throw NetworkException('No internet connection.');
+    }
+  }
+
   // API request method GET
   Future<ApiResponse<T>> getRequest<T>(
       {required String endPoint,
       required T Function(Map<String, dynamic>) fromJson,
       Map<String, dynamic>? queryParameters}) async {
     try {
+      await _checkConnectivity();
       final response =
           await _dio.get(endPoint, queryParameters: queryParameters);
       final data = fromJson(response.data);
       return ApiResponse<T>(data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -65,11 +82,14 @@ class ApiClient {
       required List<T> Function(List<dynamic>) fromJosnList,
       Map<String, dynamic>? queryParameters}) async {
     try {
+      await _checkConnectivity();
       final response =
           await _dio.get(endPoint, queryParameters: queryParameters);
       final data = fromJosnList(response.data);
       return ApiResponse<List<T>>(
           data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -81,12 +101,15 @@ class ApiClient {
   // API request method POST
   Future<ApiResponse<T>> postRequest<T>(
       {required String endPoint,
-      Map<String, dynamic>? reqModel,
+      required Map<String, dynamic> reqModel,
       required T Function(Map<String, dynamic>) fromJson}) async {
     try {
+      await _checkConnectivity();
       final response = await _dio.post(endPoint, data: reqModel);
       final data = fromJson(response.data);
       return ApiResponse<T>(data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -100,10 +123,13 @@ class ApiClient {
       Map<String, dynamic>? reqModel,
       required List<T> Function(List<dynamic>) fromJsonList}) async {
     try {
+      await _checkConnectivity();
       final response = await _dio.post(endPoint, data: reqModel);
       final data = fromJsonList(response.data);
       return ApiResponse<List<T>>(
           data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -115,12 +141,15 @@ class ApiClient {
   // API request method PUT
   Future<ApiResponse<T>> putRequest<T>(
       {required String endPoint,
-      Map<String, dynamic>? reqModel,
+      required Map<String, dynamic> reqModel,
       required T Function(Map<String, dynamic>) fromJson}) async {
     try {
+      await _checkConnectivity();
       final response = await _dio.put(endPoint, data: reqModel);
       final data = fromJson(response.data);
       return ApiResponse<T>(data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -132,11 +161,14 @@ class ApiClient {
   Future<ApiResponse<Map<String, dynamic>>> deleteRequest(
       {required String endPoint, Map<String, dynamic>? queryParameters}) async {
     try {
+      await _checkConnectivity();
       final response =
           await _dio.delete(endPoint, queryParameters: queryParameters);
       final data = response.data as Map<String, dynamic>;
       return ApiResponse<Map<String, dynamic>>(
           data: data, statusCode: response.statusCode ?? 0);
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
@@ -154,12 +186,10 @@ class ApiClient {
     required String imageFieldName,
   }) async {
     try {
-      // Prepare the form data
-      Map<String, dynamic> formDataMap = {
-        ...?reqModel
-      }; // Spread reqModel if it's not null
+      await _checkConnectivity();
 
-      // If imageFile is provided, add it to the form data
+      Map<String, dynamic> formDataMap = {...?reqModel};
+
       if (imageFile != null) {
         String fileName = imageFile.path.split('/').last;
         formDataMap[imageFieldName] =
@@ -167,19 +197,16 @@ class ApiClient {
       }
 
       FormData formData = FormData.fromMap(formDataMap);
-
-      // Make the POST request
       final response = await _dio.post(endPoint, data: formData);
-
-      // Parse the response
       final responseData = fromJson(response.data);
 
       return ApiResponse<T>(
         data: responseData,
         statusCode: response.statusCode ?? 0,
       );
+    } on NetworkException {
+      rethrow;
     } on DioException catch (e) {
-      // Handle Dio errors
       final statusCode = e.response?.statusCode ?? 0;
       final errorMessage = _handleDioError(e, statusCode);
 
@@ -214,7 +241,7 @@ class ApiClient {
             "Connection to API server failed due to internet connection";
         break;
       default:
-        errorMessage = "Unexpected error occurred";
+        errorMessage = "Connection Failed";
         break;
     }
     return errorMessage;
