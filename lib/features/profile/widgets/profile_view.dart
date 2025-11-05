@@ -38,6 +38,13 @@ class ProfileView extends StatelessWidget {
             child: const Text('Posts'),
           ),
           const SizedBox(height: 10),
+          // create-post button
+          ElevatedButton(
+            onPressed: () {
+              context.pushNamed('create-post');
+            },
+            child: const Text('Create Post'),
+          ),
           ElevatedButton(
             onPressed: () async {
               await StorageService.clearAllData();
