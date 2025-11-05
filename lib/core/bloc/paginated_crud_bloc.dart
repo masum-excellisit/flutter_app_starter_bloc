@@ -267,6 +267,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
   int _page = 0;
   String? _currentQuery;
   List<String>? _currentSearchFields;
+  String? _currentSortBy;
+  bool _currentSortAscending = true;
   CrudEvent<CreatePayload, UpdatePayload, Id>? _lastFailedEvent;
 
   Future<void> _onLoadItems(
@@ -305,6 +307,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     required bool refresh,
     String? search,
     List<String>? searchFields,
+    String? sortBy,
+    bool? sortAscending,
   }) async {
     if (_isFetching) {
       return;
@@ -312,6 +316,9 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
 
     final targetQuery = search ?? _currentQuery;
     final targetFields = searchFields ?? _currentSearchFields;
+    final targetSortBy = sortBy ?? _currentSortBy;
+    final targetSortAscending = sortAscending ?? _currentSortAscending;
+
     if (refresh) {
       _page = 0;
     } else if (!state.hasMore) {
@@ -326,6 +333,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         status: CrudStatus.loading,
         query: targetQuery,
         searchFields: targetFields,
+        sortBy: targetSortBy,
+        sortAscending: targetSortAscending,
         isOffline: false,
         errorMessage: CrudState._unset,
         feedbackMessage: CrudState._unset,
@@ -335,6 +344,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         isLoadingMore: true,
         query: targetQuery,
         searchFields: targetFields,
+        sortBy: targetSortBy,
+        sortAscending: targetSortAscending,
         isOffline: false,
         errorMessage: CrudState._unset,
         feedbackMessage: CrudState._unset,
@@ -346,11 +357,13 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         page: _page,
         pageSize: pageSize,
         search: targetQuery,
+        sortBy: targetSortBy,
+        sortOrder: targetSortAscending ? 'asc' : 'desc',
       );
 
       List<T> filteredItems = result.items;
 
-      // Apply client-side filtering if searchFields are specified and a filter function is provided
+      // Apply client-side filtering if searchFields are specified
       if (targetQuery != null &&
           targetQuery.isNotEmpty &&
           targetFields != null &&
@@ -368,6 +381,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
 
       _currentQuery = targetQuery;
       _currentSearchFields = targetFields;
+      _currentSortBy = targetSortBy;
+      _currentSortAscending = targetSortAscending;
       _page += 1;
 
       emit(state.copyWith(
@@ -379,6 +394,8 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
         errorMessage: CrudState._unset,
         query: targetQuery,
         searchFields: targetFields,
+        sortBy: targetSortBy,
+        sortAscending: targetSortAscending,
       ));
     } catch (error) {
       final failure = _handleError(error);
@@ -399,9 +416,7 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
             _isFetching = false;
             return;
           }
-        } catch (_) {
-          // Ignore cache errors and fall back to failure state.
-        }
+        } catch (_) {}
       }
 
       emit(state.copyWith(
@@ -419,19 +434,13 @@ class CrudBloc<T, CreatePayload, UpdatePayload, Id>
     SortItemsEvent<CreatePayload, UpdatePayload, Id> event,
     Emitter<CrudState<T>> emit,
   ) async {
-    if (itemSorter == null) return;
-
-    final sortedItems = List<T>.from(state.items)
-      ..sort((a, b) {
-        final result = itemSorter!(a, b, event.sortBy);
-        return event.ascending ? result : -result;
-      });
-
-    emit(state.copyWith(
-      items: sortedItems,
+    // Trigger API call with sort parameters
+    await _fetchPage(
+      emit,
+      refresh: true,
       sortBy: event.sortBy,
       sortAscending: event.ascending,
-    ));
+    );
   }
 
   Future<void> _onBulkDelete(

@@ -58,6 +58,11 @@ class PostCard extends StatelessWidget {
               post.body,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Post Id : ${post.id.toString()}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             if (post.tags.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(

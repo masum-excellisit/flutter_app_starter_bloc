@@ -19,9 +19,17 @@ class PostsRepository
     required int page,
     required int pageSize,
     String? search,
+    String? sortBy,
+    String? sortOrder,
   }) async {
     final ApiResponse<PaginatedResult<PostModel>> response =
-        await _api.fetchPosts(page: page, pageSize: pageSize, search: search);
+        await _api.fetchPosts(
+      page: page,
+      pageSize: pageSize,
+      search: search,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+    );
 
     if (response.data != null) {
       return response.data!;

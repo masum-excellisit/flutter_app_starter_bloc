@@ -14,6 +14,8 @@ class PostsApi {
     required int page,
     required int pageSize,
     String? search,
+    String? sortBy,
+    String? sortOrder,
   }) {
     final bool hasQuery = search != null && search.isNotEmpty;
     final String endpoint = hasQuery ? EndPoints.postsSearch : EndPoints.posts;
@@ -23,6 +25,8 @@ class PostsApi {
       'limit': pageSize,
       'skip': skip,
       if (hasQuery) 'q': search,
+      if (sortBy != null && sortBy.isNotEmpty) 'sortBy': sortBy,
+      if (sortOrder != null && sortOrder.isNotEmpty) 'order': sortOrder,
     };
 
     return _client.getRequest<PaginatedResult<PostModel>>(

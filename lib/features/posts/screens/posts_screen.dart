@@ -8,6 +8,7 @@ import '../../../core/errors/failures.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../../core/widgets/search_input.dart';
+import '../../../core/widgets/sort_selector.dart';
 import '../bloc/posts_bloc.dart';
 import '../models/post_model.dart';
 import '../models/post_request.dart';
@@ -25,6 +26,7 @@ class _PostsScreenState extends State<PostsScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final List<String> _searchFields = ['title'];
+  final List<String> _sortFields = ['id', 'title', 'body'];
 
   @override
   void dispose() {
@@ -43,6 +45,13 @@ class _PostsScreenState extends State<PostsScreen> {
         searchFields: _searchFields,
       ));
     });
+  }
+
+  void _onSortChanged(String field, bool ascending) {
+    _bloc.add(SortItemsEvent<PostRequest, PostRequest, int>(
+      field,
+      ascending: ascending,
+    ));
   }
 
   Future<void> _onRefresh() async {
@@ -146,11 +155,25 @@ class _PostsScreenState extends State<PostsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: ReusableSearchInput(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                hintText: 'Search ${_searchFields!.join(', ')}',
-                toSearch: _searchFields,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ReusableSearchInput(
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
+                      hintText: 'Search ${_searchFields.join(', ')}',
+                      toSearch: _searchFields,
+                    ),
+                  ),
+                  BlocBuilder<PostsBloc, CrudState<PostModel>>(
+                    builder: (context, state) => SortSelector(
+                      sortFields: _sortFields,
+                      currentSortBy: state.sortBy,
+                      isAscending: state.sortAscending,
+                      onSortChanged: _onSortChanged,
+                    ),
+                  ),
+                ],
               ),
             ),
             BlocBuilder<PostsBloc, CrudState<PostModel>>(

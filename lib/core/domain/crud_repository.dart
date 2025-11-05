@@ -5,6 +5,8 @@ abstract class CrudRepository<T, CreatePayload, UpdatePayload, Id> {
     required int page,
     required int pageSize,
     String? search,
+    String? sortBy,
+    String? sortOrder,
   });
 
   Future<T> create(CreatePayload payload);
