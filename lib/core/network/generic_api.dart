@@ -44,13 +44,50 @@ class GenericApi<T, CreatePayload, UpdatePayload, Id> {
     return _client.getRequest<PaginatedResult<T>>(
       endPoint: endpoint,
       queryParameters: queryParameters,
-      fromJson: (Map<String, dynamic> json) {
-        final List<dynamic> listJson =
-            json[itemsKey] as List<dynamic>? ?? const [];
-        final int total = (json['total'] as num?)?.toInt() ?? listJson.length;
-        final int limit = (json['limit'] as num?)?.toInt() ?? pageSize;
-        final int currentSkip = (json['skip'] as num?)?.toInt() ?? skip;
-        final int currentPage = limit == 0 ? 0 : currentSkip ~/ limit;
+      fromJson: (dynamic json) {
+        // The endpoint might return a few different shapes:
+        // 1) a wrapper object: { '<itemsKey>': [...], 'total': ..., 'skip': ..., 'limit': ... }
+        // 2) a wrapper object with 'items'/'data' fields
+        // 3) a top-level List [...]
+        // We try a few heuristics to extract the array safely.
+        dynamic raw = json;
+        List<dynamic> listJson = const [];
+        int total = 0;
+        int limit = pageSize;
+        int currentSkip = skip;
+
+        try {
+          if (raw is List) {
+            listJson = raw;
+            total = listJson.length;
+            limit = pageSize;
+            currentSkip = skip;
+          } else if (raw is Map<String, dynamic>) {
+            // prefer the provided itemsKey
+            final dynamic itemsCandidate = raw[itemsKey];
+            if (itemsCandidate is List) {
+              listJson = itemsCandidate;
+            } else if ((raw['items'] is List)) {
+              listJson = raw['items'] as List<dynamic>;
+            } else if ((raw['data'] is List)) {
+              listJson = raw['data'] as List<dynamic>;
+            } else {
+              // Not an array container - try to detect if the response itself is a single item
+              listJson = const [];
+            }
+
+            total = (raw['total'] as num?)?.toInt() ?? listJson.length;
+            limit = (raw['limit'] as num?)?.toInt() ?? pageSize;
+            currentSkip = (raw['skip'] as num?)?.toInt() ?? skip;
+          }
+        } catch (_) {
+          listJson = const [];
+          total = 0;
+          limit = pageSize;
+          currentSkip = skip;
+        }
+
+        final int currentPage = limit == 0 ? 0 : (currentSkip ~/ limit);
 
         final items = listJson
             .map((e) => fromJson(Map<String, dynamic>.from(e as Map)))

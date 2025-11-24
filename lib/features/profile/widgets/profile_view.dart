@@ -38,6 +38,13 @@ class ProfileView extends StatelessWidget {
             child: const Text('Posts'),
           ),
           const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              context.pushNamed('recipes');
+            },
+            child: const Text('Recipes'),
+          ),
+          const SizedBox(height: 10),
           // create-post button
           ElevatedButton(
             onPressed: () {
