@@ -59,7 +59,7 @@ class ApiClient {
   // API request method GET
   Future<ApiResponse<T>> getRequest<T>(
       {required String endPoint,
-      required T Function(Map<String, dynamic>) fromJson,
+      required T Function(dynamic) fromJson,
       Map<String, dynamic>? queryParameters}) async {
     try {
       await _checkConnectivity();

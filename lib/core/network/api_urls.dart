@@ -21,4 +21,6 @@ class EndPoints {
   static const postsSearch = '/posts/search';
   static const products = '/products';
   static const productsAdd = '/products/add';
+  static const recipes = '/recipes';
+  static const recipesAdd = '/recipes/add';
 }

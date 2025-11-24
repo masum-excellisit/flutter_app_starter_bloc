@@ -6,6 +6,7 @@ import 'features/create_product/create_product_module.dart';
 import 'features/edit_profile/edit_profile_module.dart';
 import 'features/login/login_module.dart';
 import 'features/profile/profile_module.dart';
+import 'features/recipes/recipes_module.dart';
 import 'features/register/register_module.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'features/posts/posts_module.dart';
@@ -54,7 +55,11 @@ class AppRouter {
         name: 'create-product',
         builder: (context, state) => CreateProductModule.route(),
       ),
-
+      GoRoute(
+        path: '/recipes',
+        name: 'recipes',
+        builder: (context, state) => RecipesModule.route(),
+      ),
       // GoRoute(
       //   path: '/home',
       //   name: 'home',
