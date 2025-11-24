@@ -46,10 +46,6 @@ lib/
 │   └── widgets/
 │       ├── app_bottom_navigation_bar.dart
 │       ├── app_scaffold.dart
-│       ├── paginated_list_view.dart
-│       └── search_input.dart
-├── features/
-│   ├── edit_profile/
 │   ├── login/
 │   ├── posts/
 │   │   ├── api/
@@ -60,8 +56,6 @@ lib/
 │   │   └── widgets/
 │   ├── profile/
 │   ├── register/
-│   └── splash/
-├── injection_container.dart
 └── main.dart
 ```
 
@@ -79,10 +73,6 @@ lib/
 - Tokens are stored using `StorageService`:
   - Access token key: `AppConstants.accessTokenKey`
   - Refresh token key: `AppConstants.refreshTokenKey`
-- After successful login, a token is added to all requests via `ApiClient` interceptor (Bearer token header).
-- Logout clears all persisted state and secure tokens and navigates to `login`.
-
-## 🚀 Getting Started
 
 1. Clone the repo
 
@@ -116,7 +106,6 @@ flutter run
 - `/register`
 - `/profile`
 - `/edit_profile`
-- `/posts`
 
 ## 🧩 Reusable CRUD Workflow
 

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+// go_router not used directly in this screen
 
 import '../../../core/bloc/paginated_crud_bloc.dart';
 import '../../../core/errors/failures.dart';
@@ -10,7 +10,7 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../../core/widgets/search_input.dart';
 import '../../../core/widgets/sort_selector.dart';
-import '../bloc/posts_bloc.dart';
+// PostsBloc removed in favor of generic CrudBloc usage
 import '../models/post_model.dart';
 import '../models/post_request.dart';
 import '../widgets/post_card.dart';
@@ -36,7 +36,8 @@ class _PostsScreenState extends State<PostsScreen> {
     super.dispose();
   }
 
-  PostsBloc get _bloc => context.read<PostsBloc>();
+  CrudBloc<PostModel, PostRequest, PostRequest, int> get _bloc =>
+      context.read<CrudBloc<PostModel, PostRequest, PostRequest, int>>();
 
   void _onSearchChanged(String value) {
     _debounce?.cancel();
@@ -128,7 +129,8 @@ class _PostsScreenState extends State<PostsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PostsBloc, CrudState<PostModel>>(
+    return BlocListener<CrudBloc<PostModel, PostRequest, PostRequest, int>,
+        CrudState<PostModel>>(
       listenWhen:
           (CrudState<PostModel> previous, CrudState<PostModel> current) =>
               previous.feedbackMessage != current.feedbackMessage,
@@ -166,7 +168,9 @@ class _PostsScreenState extends State<PostsScreen> {
                       toSearch: _searchFields,
                     ),
                   ),
-                  BlocBuilder<PostsBloc, CrudState<PostModel>>(
+                  BlocBuilder<
+                      CrudBloc<PostModel, PostRequest, PostRequest, int>,
+                      CrudState<PostModel>>(
                     builder: (context, state) => SortSelector(
                       sortFields: _sortFields,
                       currentSortBy: state.sortBy,
@@ -177,7 +181,8 @@ class _PostsScreenState extends State<PostsScreen> {
                 ],
               ),
             ),
-            BlocBuilder<PostsBloc, CrudState<PostModel>>(
+            BlocBuilder<CrudBloc<PostModel, PostRequest, PostRequest, int>,
+                CrudState<PostModel>>(
               builder: (BuildContext context, CrudState<PostModel> state) {
                 return Expanded(
                   child: Column(
